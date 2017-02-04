@@ -21,10 +21,22 @@
     <script type="text/javascript" src="popup.js"></script>
   </head>
   <body>
-    VHost Domain:<br/>
-    <input type="text" id="vhost_domain" placeholder="dev.yourhost.com"/><br/>
-    VHost IP:<br/>
-    <input type="text" id="vhost_ip" placeholder="127.0.0.1"/><br/>
-    Enable: <input type="checkbox" id="vhost_enable"/>
+    <table id="table">
+      <thead>
+        <tr>
+          <th>Enable</th>
+          <th>VHost Domain</th>
+          <th>Vhost Ip</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+    <div>
+      <button type="button" id="appendRow">
+        Add More Row
+      </button>
+    </div>
   </body>
 </html>

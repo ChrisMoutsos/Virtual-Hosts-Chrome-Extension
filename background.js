@@ -1,26 +1,49 @@
 var settings = {
-      'domain': "",
-      'ip': "",
-      'enabled': false
+      rows: [],
     },
     requestFilter = {urls: ["<all_urls>"]},
     onBeforeSendHeadersHandler = function(details) {
-      if (settings.enabled && (details.url.indexOf(settings.ip) > -1)) {
-        details.requestHeaders.push({ name: "Host", value: settings.domain });
+      var targetSettings = getTargetSettings(details, 'ip');
+      if (targetSettings) {
+        details.requestHeaders.push({ name: "Host", value: targetSettings.domain });
         return {requestHeaders: details.requestHeaders};
       }
     },
     onBeforeRequestHandler = function(details) {
-      if (settings.enabled && (details.url.indexOf(settings.domain) > -1)) {
-        return { redirectUrl: details.url.replace(settings.domain, settings.ip) };
+      var targetSettings = getTargetSettings(details);
+      if (targetSettings) {
+        return { redirectUrl: details.url.replace(targetSettings.domain, targetSettings.ip) };
       }
     };
 
+function getTargetSettings(details, settingsKey) {
+  settingsKey = settingsKey || 'domain';
+  var targetSettings = null;
+  if (settings.rows) {
+    for (var i = 0; i < settings.rows.length; i++) {
+      var row = settings.rows[i];
+      if (row.enabled && row.domain && row.ip && (details.url.indexOf(row[settingsKey]) > -1)) {
+        targetSettings = row;
+        break;
+      }
+    }
+  }
+  return targetSettings;
+}
+
 chrome.storage.sync.get(settings, function(result) {
-  if(result.domain) settings.domain = result.domain;
-  if(result.ip) settings.ip = result.ip;
-  if(result.enabled) settings.enabled = result.enabled;
-  chrome.browserAction.setIcon({path: (settings.enabled ? 'enabled' : 'disabled') + '.png'});
+  if (result.rows) {
+    settings.rows = result.rows;
+  }
+  var hasVirtual = false;
+  for (var i = 0; i < settings.rows.length; i++) {
+    var row = settings.rows[i];
+    if (row.enabled) {
+      hasVirtual = true;
+      break;
+    }
+  }
+  chrome.browserAction.setIcon({path: hasVirtual ? 'enabled.png' : 'disabled.png'});
 });
 
 chrome.webRequest.onBeforeRequest.addListener(onBeforeRequestHandler, requestFilter, ["blocking"]);
