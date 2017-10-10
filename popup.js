@@ -9,7 +9,6 @@ var loadHandler = function() {
   appendRowButton.addEventListener("click", appendRow, false);
 
   updateRows();
-  updateIcons();
 };
 
 var updateRows = function() {
@@ -47,19 +46,6 @@ var appendRow = function(event, settings) {
   tbody.appendChild(row);
 };
 
-var updateIcons = function() {
-  var rows = background.settings.rows;
-  var hasVirtual = false;
-  for (var i = 0; i < rows.length; i++) {
-    var row = rows[i];
-    if (row.enabled) {
-      hasVirtual = true;
-      break;
-    }
-  }
-  chrome.browserAction.setIcon({path: hasVirtual ? 'enabled.png' : 'disabled.png'});
-};
-
 var updateHandler = function(e)
 {
   var rows = tbody.getElementsByTagName('tr');
@@ -82,8 +68,6 @@ var updateHandler = function(e)
   var persist = {
     rows: rowsSettings
   };
-
-  updateIcons();
 
   // persist settings
   chrome.storage.sync.set(persist);

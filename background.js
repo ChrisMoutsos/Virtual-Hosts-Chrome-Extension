@@ -35,16 +35,38 @@ chrome.storage.sync.get(settings, function(result) {
   if (result.rows) {
     settings.rows = result.rows;
   }
-  var hasVirtual = false;
-  for (var i = 0; i < settings.rows.length; i++) {
-    var row = settings.rows[i];
-    if (row.enabled) {
-      hasVirtual = true;
-      break;
-    }
-  }
-  chrome.browserAction.setIcon({path: hasVirtual ? 'enabled.png' : 'disabled.png'});
 });
 
 chrome.webRequest.onBeforeRequest.addListener(onBeforeRequestHandler, requestFilter, ["blocking"]);
 chrome.webRequest.onBeforeSendHeaders.addListener(onBeforeSendHeadersHandler, requestFilter, ["blocking", "requestHeaders"]);
+
+// update icon based on whether or not this tab is using vhost
+var updateIcons = function() {
+  var rows = settings.rows;
+  var enabled = false;
+  chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function(tabs) {
+    var url = tabs[0].url;
+
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      //if (row.enabled) {
+        if (url.includes(row.ip)) {
+          enabled = true;
+          break;
+        }
+      //}
+    }
+ 
+    chrome.browserAction.setIcon({path: enabled ? 'enabled.png' : 'disabled.png'});
+  });
+ 
+};
+ 
+chrome.tabs.onActivated.addListener(function(activeInfo) {
+  updateIcons();
+});
+ 
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+  updateIcons();
+});
+
